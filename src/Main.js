@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './components/ui/button';
+import prisma from '../lib/prisma';
 import { ChevronLeft, ChevronRight, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -86,7 +87,7 @@ const Main = () => {
     setExchanges([...exchanges, newExchange]);
     setShowExchangeModal(false);
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">

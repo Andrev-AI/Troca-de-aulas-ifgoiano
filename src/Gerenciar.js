@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './components/ui/button';
+import prisma from '../lib/prisma';
 import { Trash2 } from 'lucide-react';
 import {
   Select,
@@ -10,33 +11,94 @@ import {
 } from './components/ui/select';
 
 const Gerenciar = () => {
-  const [subjects, setSubjects] = useState(["Matemática", "Português", "Física", "Literatura"]);
-  const [teachers, setTeachers] = useState([
-    { id: 1, name: "João Silva", subjects: ["Matemática", "Física"] },
-    { id: 2, name: "Maria Santos", subjects: ["Português", "Literatura"] },
-  ]);
+  const [subjects, setSubjects] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [newTeacher, setNewTeacher] = useState({ name: "", subjects: [] });
   const [newSubject, setNewSubject] = useState("");
 
-  const handleAddTeacher = () => {
-    setTeachers([...teachers, { ...newTeacher, id: Date.now() }]);
-    setNewTeacher({ name: "", subjects: [] });
+  // Fetch initial data
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const fetchedSubjects = await prisma.subject.findMany();
+      const fetchedTeachers = await prisma.teacher.findMany({
+        include: {
+          subjects: true
+        }
+      });
+
+      setSubjects(fetchedSubjects.map(s => s.name));
+      setTeachers(fetchedTeachers.map(t => ({
+        id: t.id,
+        name: t.name,
+        subjects: t.subjects.map(s => s.name)
+      })));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
-  const handleAddSubject = () => {
-    setSubjects([...subjects, newSubject]);
-    setNewSubject("");
+  const handleAddTeacher = async () => {
+    try {
+      const createdTeacher = await prisma.teacher.create({
+        data: {
+          name: newTeacher.name,
+          subjects: {
+            connect: newTeacher.subjects.map(subject => ({
+              name: subject
+            }))
+          }
+        },
+        include: {
+          subjects: true
+        }
+      });
+
+      setTeachers([...teachers, {
+        id: createdTeacher.id,
+        name: createdTeacher.name,
+        subjects: createdTeacher.subjects.map(s => s.name)
+      }]);
+      setNewTeacher({ name: "", subjects: [] });
+    } catch (error) {
+      console.error('Error adding teacher:', error);
+    }
   };
 
-  const handleRemoveSubject = (subject) => {
-    setSubjects(subjects.filter(sub => sub !== subject));
-    setTeachers(teachers.map(teacher => ({
-      ...teacher,
-      subjects: teacher.subjects.filter(sub => sub !== subject)
-    })));
+  const handleAddSubject = async () => {
+    try {
+      await prisma.subject.create({
+        data: {
+          name: newSubject
+        }
+      });
+      setSubjects([...subjects, newSubject]);
+      setNewSubject("");
+    } catch (error) {
+      console.error('Error adding subject:', error);
+    }
   };
 
-  return (
+  const handleRemoveSubject = async (subject) => {
+    try {
+      await prisma.subject.delete({
+        where: {
+          name: subject
+        }
+      });
+      setSubjects(subjects.filter(sub => sub !== subject));
+      setTeachers(teachers.map(teacher => ({
+        ...teacher,
+        subjects: teacher.subjects.filter(sub => sub !== subject)
+      })));
+    } catch (error) {
+      console.error('Error removing subject:', error);
+    }
+  };
+ return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-8">Gerenciamento de Professores e Matérias</h1>
