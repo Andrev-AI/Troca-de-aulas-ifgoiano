@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './components/ui/button';
-import prisma from '../lib/prisma';
+import prisma from './lib/prisma';
 import { ChevronLeft, ChevronRight, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {

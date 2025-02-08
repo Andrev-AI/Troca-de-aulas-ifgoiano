@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-alert-dialog": "^1.1.5",
     "@radix-ui/react-dialog": "^1.1.5",

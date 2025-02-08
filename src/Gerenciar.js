@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './components/ui/button';
-import prisma from '../lib/prisma';
+import prisma from './lib/prisma';
 import { Trash2 } from 'lucide-react';
 import {
   Select,
