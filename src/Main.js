@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from './components/ui/button';
-import prisma from './lib/prisma';
 import { ChevronLeft, ChevronRight, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -34,11 +33,11 @@ const Main = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteExchangeId, setDeleteExchangeId] = useState(null);
-  const [subjects, setSubjects] = useState(["Matemática", "Português", "Física", "Literatura"]);
-  const [teachers, setTeachers] = useState([
-    { id: 1, name: "João Silva", subjects: ["Matemática", "Física"] },
-    { id: 2, name: "Maria Santos", subjects: ["Português", "Literatura"] },
-  ]);
+  // const [subjects, setSubjects] = useState(["Matemática", "Português", "Física", "Literatura"]);
+  // const [teachers, setTeachers] = useState([
+  //   { id: 1, name: "João Silva", subjects: ["Matemática", "Física"] },
+  //   { id: 2, name: "Maria Santos", subjects: ["Português", "Literatura"] },
+  // ]);
   const [exchangeForm, setExchangeForm] = useState({ subject: "", teacher: "", date: "" });
   const [exchanges, setExchanges] = useState([]);
 
