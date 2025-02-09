@@ -31,7 +31,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false prisma generate && react-scripts build",
+    "build": "CI=false react-scripts build",
     "vercel-build": "CI=false prisma generate && prisma db push && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -42,9 +42,11 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
+  },
+  "rules": {
+      "no-unused-vars": "warn"
   },
   "browserslist": {
     "production": [
