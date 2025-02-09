@@ -31,7 +31,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "prisma generate && react-scripts build",
+    "vercel-build": "prisma generate && prisma db push && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prisma:studio": "prisma studio",
