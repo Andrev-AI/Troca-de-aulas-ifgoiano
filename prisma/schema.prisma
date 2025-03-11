@@ -1,0 +1,46 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  teachers  Teacher[] // Relacionamento: uma matéria pode ter vários professores
+  classes   ClassData[] // Relacionamento: uma matéria pode estar em várias aulas
+}
+
+model Teacher {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  subjects  Subject[] // Relacionamento: um professor pode lecionar várias matérias
+  classes   ClassData[] // Relacionamento: um professor pode dar várias aulas
+}
+
+model ClassData {
+  id         Int      @id @default(autoincrement())
+  dayIndex   Int
+  timeIndex  Int
+  subjectId  Int
+  teacherId  Int
+  date       String
+  isFixed    Boolean  @default(false)
+  className  String
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  teacher    Teacher  @relation(fields: [teacherId], references: [id])
+}
+
+model FixedClass {
+  id         Int      @id @default(autoincrement())
+  dayIndex   Int
+  timeIndex  Int
+  subjectId  Int
+  teacherId  Int
+  className  String
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  teacher    Teacher  @relation(fields: [teacherId], references: [id])
+}
