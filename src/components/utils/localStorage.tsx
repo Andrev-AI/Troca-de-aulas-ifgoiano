@@ -6,7 +6,7 @@ export const getSchedule = (): ClassData[] => {
   const saved = localStorage.getItem('schedule');
   return saved ? JSON.parse(saved) : [];
 };
-// Armazenamento de Matérias
+
 export const getSubjects = () => {
   if (typeof window !== 'undefined') {
     const savedSubjects = localStorage.getItem('subjects');
@@ -21,7 +21,6 @@ export const saveSubjects = (subjects: Subject[]) => {
   }
 };
 
-// Armazenamento de Professores
 export const getTeachers = () => {
   if (typeof window !== 'undefined') {
     const savedTeachers = localStorage.getItem('teachers');
@@ -35,9 +34,6 @@ export const saveTeachers = (teachers: Teacher[]) => {
     localStorage.setItem('teachers', JSON.stringify(teachers));
   }
 };
-
-// Armazenamento de Aulas Fixas
-// As aulas fixas serão exibidas na tabela principal e não poderão ser removidas
 export const saveFixedClasses = (fixedClasses: FixedClass[]) => {
   localStorage.setItem('fixedClasses', JSON.stringify(fixedClasses));
 };
@@ -60,8 +56,6 @@ interface Teacher {
   subjects: number[];
 }
 
-// Interface para aulas regulares (que podem ser modificadas)
-// A propriedade isFixed indica se a aula é fixa (para controle na interface)
 export interface ClassData {
   className: string;
   id: number;
@@ -70,10 +64,9 @@ export interface ClassData {
   subjectId: number;
   teacherId: number;
   date: string;
-  isFixed?: boolean; // Se true, a aula é fixa e não pode ser excluída ou modificada
+  isFixed?: boolean; 
 }
 
-// Interface para aulas fixas, armazenadas separadamente
 export interface FixedClass {
   date: string;
   className: string;

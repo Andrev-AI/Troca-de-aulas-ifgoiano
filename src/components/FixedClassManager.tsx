@@ -31,33 +31,29 @@ const timeSlots = [
 ];
 
 export default function FixedClassManager({ schedule, setSchedule, subjects, teachers }: FixedClassManagerProps) {
-  // Filtra apenas as aulas fixas
+
   const fixedClasses = schedule.filter(cls => cls.isFixed);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Guarda o horário selecionado para criação ou edição
+
   const [selectedSlot, setSelectedSlot] = useState<{ dayIndex: number; timeIndex: number } | null>(null);
-  // Se houver aula fixa sendo editada ou clonada
+
   const [currentFixedClass, setCurrentFixedClass] = useState<ClassData | null>(null);
 
-  // Abre modal para criação de nova aula fixa
   const openModalForSlot = (dayIndex: number, timeIndex: number) => {
     setSelectedSlot({ dayIndex, timeIndex });
     setCurrentFixedClass(null);
     setIsModalOpen(true);
   };
 
-  // Abre modal para editar aula fixa existente
   const openModalForEdit = (cls: ClassData) => {
     setSelectedSlot({ dayIndex: cls.dayIndex, timeIndex: cls.timeIndex });
     setCurrentFixedClass(cls);
     setIsModalOpen(true);
   };
 
-  // Abre modal para clonar: preenche dados da aula e permite escolher novo horário
   const openModalForClone = (cls: ClassData) => {
     setSelectedSlot(null);
-    // Cria cópia da aula para clonar (novo ID será gerado na hora de salvar)
     setCurrentFixedClass({ ...cls, id: Date.now() });
     setIsModalOpen(true);
   };
@@ -69,7 +65,6 @@ export default function FixedClassManager({ schedule, setSchedule, subjects, tea
     }
     const { subjectId, teacherId } = data;
 
-    // Verifica conflito: não pode haver outra aula fixa no mesmo horário (exceto na edição da própria aula)
     const conflict = schedule.find(cls =>
       cls.isFixed &&
       cls.dayIndex === selectedSlot.dayIndex &&
@@ -82,7 +77,6 @@ export default function FixedClassManager({ schedule, setSchedule, subjects, tea
     }
 
     if (currentFixedClass) {
-      // Atualiza aula fixa existente (edição ou clonagem)
       const updatedFixedClass: ClassData = {
         ...currentFixedClass,
         dayIndex: selectedSlot.dayIndex,
@@ -96,14 +90,13 @@ export default function FixedClassManager({ schedule, setSchedule, subjects, tea
       setSchedule(updatedSchedule);
       saveSchedule(updatedSchedule);
     } else {
-      // Cria nova aula fixa
       const newFixedClass: ClassData = {
         id: Date.now(),
         dayIndex: selectedSlot.dayIndex,
         timeIndex: selectedSlot.timeIndex,
         subjectId,
         teacherId,
-        date: '', // Para aulas fixas, a data pode ser ignorada ou definida como padrão
+        date: '',
         isFixed: true,
         className: ''
       };

@@ -42,8 +42,7 @@ const timeSlots = [
   '11:10 - 12:00'
 ];
 
-// No arquivo ScheduleTable.tsx
-const classes = ['Agropecuária', 'Informática', 'Administração', 'Zootecnia']; // Já estava correto, mas vamos garantir
+const classes = ['Agropecuária', 'Informática', 'Administração', 'Zootecnia'];
 
 export default function ScheduleTable({
   currentWeek,
@@ -59,7 +58,6 @@ export default function ScheduleTable({
 
   const currentClassName = classes[currentClassIndex];
 
-  // Carregar aulas fixas e combiná-las com o schedule normal, filtrando por turma
   useEffect(() => {
     const fixedClasses = getFixedClasses()
       .filter((fc: FixedClass) => fc.className === currentClassName)
@@ -114,7 +112,7 @@ export default function ScheduleTable({
       teacherId,
       date,
       isFixed: false,
-      className: currentClassName, // Usa "Informática", "Agropecuária", etc.
+      className: currentClassName,
     };
 
     const updatedSchedule = [...schedule.filter((cls) => !cls.isFixed), newClass];

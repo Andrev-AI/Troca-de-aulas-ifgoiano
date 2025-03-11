@@ -22,7 +22,6 @@ export default function Manage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   
-  // Para criar nova matéria
   const [newSubject, setNewSubject] = useState<string>('');
 
   useEffect(() => {
@@ -30,7 +29,6 @@ export default function Manage() {
     setTeachers(getTeachers());
   }, []);
 
-  // Função para adicionar matéria
   const handleAddSubject = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newSubject.trim()) {
@@ -41,7 +39,6 @@ export default function Manage() {
     }
   };
 
-  // Função para excluir matéria
   const handleDeleteSubject = (subjectId: number) => {
     const isUsedByTeacher = teachers.some(teacher => teacher.subjects.includes(subjectId));
     if (isUsedByTeacher) {
@@ -53,7 +50,6 @@ export default function Manage() {
     saveSubjects(updatedSubjects);
   };
 
-  // Callbacks para o TeacherManager (incluindo a parte de aulas fixas)
   const handleAddTeacher = (name: string, subjects: number[]) => {
     const updatedTeachers = [...teachers, { id: Date.now(), name, subjects }];
     setTeachers(updatedTeachers);
