@@ -1,9 +1,9 @@
 import prisma from '../../../lib/prisma';
 import { ClassData, FixedClass, Subject, Teacher } from '@/components/utils/types';
 
-export const saveSchedule = async (schedule: ClassData[]) => {
+export const saveSchedule = async (schedule: ClassData[]): Promise<void> => {
   await Promise.all(
-    schedule.map(async (cls) => {
+    schedule.map(async (cls: ClassData) => {
       await prisma.classData.upsert({
         where: { id: cls.id },
         update: {
@@ -34,9 +34,9 @@ export const getSchedule = async (): Promise<ClassData[]> => {
   return await prisma.classData.findMany();
 };
 
-export const saveFixedClasses = async (fixedClasses: FixedClass[]) => {
+export const saveFixedClasses = async (fixedClasses: FixedClass[]): Promise<void> => {
   await Promise.all(
-    fixedClasses.map(async (fc) => {
+    fixedClasses.map(async (fc: FixedClass) => {
       await prisma.fixedClass.upsert({
         where: { id: fc.id },
         update: {
@@ -67,9 +67,9 @@ export const getSubjects = async (): Promise<Subject[]> => {
   return await prisma.subject.findMany();
 };
 
-export const saveSubjects = async (subjects: Subject[]) => {
+export const saveSubjects = async (subjects: Subject[]): Promise<void> => {
   await Promise.all(
-    subjects.map(async (subject) => {
+    subjects.map(async (subject: Subject) => {
       await prisma.subject.upsert({
         where: { id: subject.id },
         update: { name: subject.name },
@@ -96,22 +96,22 @@ export const getTeachers = async (): Promise<Teacher[]> => {
   }));
 };
 
-export const saveTeachers = async (teachers: Teacher[]) => {
+export const saveTeachers = async (teachers: Teacher[]): Promise<void> => {
   await Promise.all(
-    teachers.map(async (teacher) => {
+    teachers.map(async (teacher: Teacher) => {
       await prisma.teacher.upsert({
         where: { id: teacher.id },
         update: {
           name: teacher.name,
           subjects: {
-            set: teacher.subjects.map((subjectId) => ({ id: subjectId })),
+            set: teacher.subjects.map((subjectId: number) => ({ id: subjectId })),
           },
         },
         create: {
           id: teacher.id,
           name: teacher.name,
           subjects: {
-            connect: teacher.subjects.map((subjectId) => ({ id: subjectId })),
+            connect: teacher.subjects.map((subjectId: number) => ({ id: subjectId })),
           },
         },
       });
