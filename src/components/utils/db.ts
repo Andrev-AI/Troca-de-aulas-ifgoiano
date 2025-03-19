@@ -1,6 +1,6 @@
 import prisma from '../../../lib/prisma';
 import { ClassData, FixedClass, Subject, Teacher } from '@/components/utils/types';
-
+import { Teacher as PrismaTeacher, Subject as PrismaSubject } from '@prisma/client';
 export const saveSchedule = async (schedule: ClassData[]): Promise<void> => {
   await Promise.all(
     schedule.map(async (cls: ClassData) => {
@@ -64,7 +64,7 @@ export const getFixedClasses = async (): Promise<FixedClass[]> => {
 };
 
 export const getSubjects = async (): Promise<Subject[]> => {
-  return await prisma.subject.findMany();
+  return await prisma.subject.findMany() as Subject[];
 };
 
 export const saveSubjects = async (subjects: Subject[]): Promise<void> => {
@@ -80,7 +80,7 @@ export const saveSubjects = async (subjects: Subject[]): Promise<void> => {
 };
 
 export const getTeachers = async (): Promise<Teacher[]> => {
-  const teachers = await prisma.teacher.findMany({
+  const teachers: (PrismaTeacher & { subjects: { id: number }[] })[] = await prisma.teacher.findMany({
     include: {
       subjects: {
         select: {
@@ -89,10 +89,10 @@ export const getTeachers = async (): Promise<Teacher[]> => {
       },
     },
   });
-  return teachers.map((teacher: { id: any; name: any; subjects: any[]; }) => ({
+  return teachers.map((teacher) => ({
     id: teacher.id,
     name: teacher.name,
-    subjects: teacher.subjects.map((s) => s.id),
+    subjects: teacher.subjects.map((s: { id: any; }) => s.id),
   }));
 };
 
