@@ -26,7 +26,7 @@ export interface Subject {
   }
   
   // Interface para uma Aula Fixa (FixedClass)
-  export interface FixedClass {
+  export interface FixedClass extends ClassData  {
     date: string;
     id: number;
     dayIndex: number; 

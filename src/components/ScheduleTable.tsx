@@ -1,4 +1,3 @@
-// components/ScheduleTable.tsx
 'use client'
 import { useState, useEffect } from 'react';
 import { ClassData, Subject, Teacher } from '@/components/utils/types'; 
@@ -8,10 +7,10 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 interface ScheduleTableProps {
   currentWeek: Date;
-  schedule: ClassData[];
-  setSchedule: React.Dispatch<React.SetStateAction<ClassData[]>>;
-  subjects: Subject[];
-  teachers: Teacher[];
+  schedule: any;
+  setSchedule: (schedule: any) => void;
+  subjects: any;
+  teachers: any;
 }
 
 const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
@@ -45,7 +44,7 @@ export default function ScheduleTable({
         }));
 
       const filteredSchedule = schedule.filter(
-        (cls) => cls.className === currentClassName && !cls.isFixed
+        (cls: { className: string; isFixed: any; }) => cls.className === currentClassName && !cls.isFixed
       );
 
       setCombinedSchedule([...filteredSchedule, ...filteredFixedClasses]);
@@ -97,14 +96,14 @@ export default function ScheduleTable({
       className: currentClassName,
     };
 
-    const updatedSchedule = [...schedule.filter((cls) => !cls.isFixed), newClass];
+    const updatedSchedule = [...schedule.filter((cls: { isFixed: any; }) => !cls.isFixed), newClass];
     setSchedule(updatedSchedule);
     await saveSchedule(updatedSchedule); // Salva no banco
     setIsModalOpen(false);
   };
 
   const handleDeleteClass = async (classId: number) => {
-    const updatedSchedule = schedule.filter((cls) => cls.id !== classId);
+    const updatedSchedule = schedule.filter((cls: { id: number; }) => cls.id !== classId);
     setSchedule(updatedSchedule);
     await saveSchedule(updatedSchedule); // Salva no banco
   };
@@ -153,10 +152,10 @@ export default function ScheduleTable({
                           }`}
                         >
                           <p className="font-medium text-gray-900">
-                            {subjects.find((subject) => subject.id === cls.subjectId)?.name || 'Matéria não encontrada'}
+                            {subjects.find((subject: { id: number; }) => subject.id === cls.subjectId)?.name || 'Matéria não encontrada'}
                           </p>
                           <p className="text-gray-800">
-                            {teachers.find((teacher) => teacher.id === cls.teacherId)?.name || 'Professor não encontrado'}
+                            {teachers.find((teacher: { id: number; }) => teacher.id === cls.teacherId)?.name || 'Professor não encontrado'}
                           </p>
                           {cls.isFixed && <p className="text-xs text-green-700 font-semibold">Aula Fixa</p>}
                           <p className="text-xs text-gray-600">
