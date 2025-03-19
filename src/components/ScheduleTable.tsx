@@ -1,4 +1,5 @@
 // components/ScheduleTable.tsx
+'use client'
 import { useState, useEffect } from 'react';
 import { ClassData, Subject, Teacher } from '@/components/utils/types'; 
 import { saveSchedule, getFixedClasses } from '@/components/utils/db'; 

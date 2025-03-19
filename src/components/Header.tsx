@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 interface HeaderProps {
   title: string;
   showManage?: boolean;
