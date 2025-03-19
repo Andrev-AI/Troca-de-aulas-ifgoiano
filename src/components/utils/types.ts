@@ -20,20 +20,19 @@ export interface Subject {
     timeIndex: number; 
     subjectId: number; 
     teacherId: number; 
-    date: string; 
+    date?: string; 
     isFixed?: boolean; 
     className: string; 
   }
   
   // Interface para uma Aula Fixa (FixedClass)
   export interface FixedClass extends ClassData  {
-    date: string;
-    id: number;
-    dayIndex: number; 
-    timeIndex: number; 
-    subjectId: number; 
-    teacherId: number; 
-    className: string; 
+    className: string;
+    dayIndex: number;
+    timeIndex: number;
+    subjectId: number;
+    teacherId: number;
+    date?: string;
   }
   
   export default {};

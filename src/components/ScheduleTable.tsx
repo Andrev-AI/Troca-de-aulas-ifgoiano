@@ -1,16 +1,16 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { ClassData, Subject, Teacher } from '@/components/utils/types'; 
+import { ClassData, FixedClass, Subject, Teacher } from '@/components/utils/types'; 
 import { saveSchedule, getFixedClasses } from '@/components/utils/db'; 
 import ClassModal from '@/components/ClassModal';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 interface ScheduleTableProps {
   currentWeek: Date;
-  schedule: any;
-  setSchedule: (schedule: any) => void;
-  subjects: any;
-  teachers: any;
+  schedule: ClassData[];
+  setSchedule: React.Dispatch<React.SetStateAction<ClassData[]>>;
+  subjects: Subject[];
+  teachers: Teacher[];
 }
 
 const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
@@ -27,31 +27,31 @@ export default function ScheduleTable({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ dayIndex: number; timeIndex: number } | null>(null);
   const [currentClassIndex, setCurrentClassIndex] = useState(0);
-  const [combinedSchedule, setCombinedSchedule] = useState<ClassData[]>([]);
+  const [combinedSchedule, setCombinedSchedule] = useState<ClassData[]>([]);  
 
   const currentClassName = classes[currentClassIndex];
 
   // Carregar aulas fixas e combiná-las com o schedule normal, filtrando por turma
   useEffect(() => {
     const loadData = async () => {
-      const fixedClasses = await getFixedClasses();
+      const fixedClasses: FixedClass[] = await getFixedClasses();
       const filteredFixedClasses = fixedClasses
-        .filter((fc) => fc.className === currentClassName)
-        .map((fc) => ({
+        .filter((fc: FixedClass) => fc.className === currentClassName)
+        .map((fc: FixedClass) => ({
           ...fc,
           isFixed: true,
           date: fc.date || new Date().toISOString(),
         }));
-
+  
       const filteredSchedule = schedule.filter(
-        (cls: { className: string; isFixed: any; }) => cls.className === currentClassName && !cls.isFixed
+        (cls: ClassData) => cls.className === currentClassName && !cls.isFixed
       );
-
+  
       setCombinedSchedule([...filteredSchedule, ...filteredFixedClasses]);
     };
-
+  
     loadData();
-  }, [schedule, currentClassIndex]);
+  }, [schedule, currentClassIndex, currentClassName]);
 
   const handlePreviousClass = () => {
     setCurrentClassIndex((prev) => (prev > 0 ? prev - 1 : classes.length - 1));
@@ -71,7 +71,7 @@ export default function ScheduleTable({
     const { subjectId, teacherId, date } = data;
 
     const classesSameDate = combinedSchedule.filter(
-      (cls) => new Date(cls.date).toDateString() === new Date(date).toDateString()
+      (cls) => new Date(cls.date || new Date().toISOString().split('T')[0]).toDateString() === new Date(date).toDateString()
     );
     const conflictingClass = classesSameDate.find(
       (cls) =>
@@ -96,7 +96,7 @@ export default function ScheduleTable({
       className: currentClassName,
     };
 
-    const updatedSchedule = [...schedule.filter((cls: { isFixed: any; }) => !cls.isFixed), newClass];
+    const updatedSchedule = [...schedule.filter((cls: ClassData) => !cls.isFixed), newClass];
     setSchedule(updatedSchedule);
     await saveSchedule(updatedSchedule); // Salva no banco
     setIsModalOpen(false);
