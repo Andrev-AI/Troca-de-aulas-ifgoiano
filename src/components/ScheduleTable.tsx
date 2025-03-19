@@ -1,29 +1,9 @@
+// components/ScheduleTable.tsx
 import { useState, useEffect } from 'react';
+import { ClassData, Subject, Teacher } from '@/components/utils/types'; 
+import { saveSchedule, getFixedClasses } from '@/components/utils/db'; 
+import ClassModal from '@/components/ClassModal';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { saveSchedule, getFixedClasses, FixedClass } from '@/components/utils/localStorage';
-import ClassModal from "./ClassModal";
-
-interface Subject {
-  id: number;
-  name: string;
-}
-
-interface Teacher {
-  id: number;
-  name: string;
-  subjects: number[];
-}
-
-interface ClassData {
-  id: number;
-  dayIndex: number;
-  timeIndex: number;
-  subjectId: number;
-  teacherId: number;
-  date: string;
-  isFixed?: boolean;
-  className: string;
-}
 
 interface ScheduleTableProps {
   currentWeek: Date;
@@ -34,14 +14,7 @@ interface ScheduleTableProps {
 }
 
 const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-const timeSlots = [
-  '07:30 - 08:20',
-  '08:20 - 09:10',
-  '09:30 - 10:20',
-  '10:20 - 11:10',
-  '11:10 - 12:00'
-];
-
+const timeSlots = ['07:30 - 08:20', '08:20 - 09:10', '09:30 - 10:20', '10:20 - 11:10', '11:10 - 12:00'];
 const classes = ['Agropecuária', 'Informática', 'Administração', 'Zootecnia'];
 
 export default function ScheduleTable({
@@ -58,18 +31,26 @@ export default function ScheduleTable({
 
   const currentClassName = classes[currentClassIndex];
 
+  // Carregar aulas fixas e combiná-las com o schedule normal, filtrando por turma
   useEffect(() => {
-    const fixedClasses = getFixedClasses()
-      .filter((fc: FixedClass) => fc.className === currentClassName)
-      .map((fc: FixedClass) => ({
-        ...fc,
-        isFixed: true,
-      }));
+    const loadData = async () => {
+      const fixedClasses = await getFixedClasses();
+      const filteredFixedClasses = fixedClasses
+        .filter((fc) => fc.className === currentClassName)
+        .map((fc) => ({
+          ...fc,
+          isFixed: true,
+          date: fc.date || new Date().toISOString(),
+        }));
 
-    const filteredSchedule = schedule
-      .filter((cls) => cls.className === currentClassName && !cls.isFixed);
+      const filteredSchedule = schedule.filter(
+        (cls) => cls.className === currentClassName && !cls.isFixed
+      );
 
-    setCombinedSchedule([...filteredSchedule, ...fixedClasses]);
+      setCombinedSchedule([...filteredSchedule, ...filteredFixedClasses]);
+    };
+
+    loadData();
   }, [schedule, currentClassIndex]);
 
   const handlePreviousClass = () => {
@@ -85,7 +66,7 @@ export default function ScheduleTable({
     setIsModalOpen(true);
   };
 
-  const handleSaveClass = (data: { subjectId: number; teacherId: number; date: string }) => {
+  const handleSaveClass = async (data: { subjectId: number; teacherId: number; date: string }) => {
     if (!selectedSlot) return;
     const { subjectId, teacherId, date } = data;
 
@@ -105,7 +86,7 @@ export default function ScheduleTable({
     }
 
     const newClass: ClassData = {
-      id: Date.now(),
+      id: Date.now(), // Pode usar autoincrement do banco, mas mantive assim por simplicidade
       dayIndex: selectedSlot.dayIndex,
       timeIndex: selectedSlot.timeIndex,
       subjectId,
@@ -117,14 +98,14 @@ export default function ScheduleTable({
 
     const updatedSchedule = [...schedule.filter((cls) => !cls.isFixed), newClass];
     setSchedule(updatedSchedule);
-    saveSchedule(updatedSchedule);
+    await saveSchedule(updatedSchedule); // Salva no banco
     setIsModalOpen(false);
   };
 
-  const handleDeleteClass = (classId: number) => {
+  const handleDeleteClass = async (classId: number) => {
     const updatedSchedule = schedule.filter((cls) => cls.id !== classId);
     setSchedule(updatedSchedule);
-    saveSchedule(updatedSchedule);
+    await saveSchedule(updatedSchedule); // Salva no banco
   };
 
   const getClassesForSlot = (dayIndex: number, timeIndex: number): ClassData[] => {

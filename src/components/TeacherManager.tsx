@@ -1,16 +1,7 @@
+// components/TeacherManager.tsx
 import { useState, useEffect } from 'react';
-import { getFixedClasses, saveFixedClasses } from '@/components/utils/localStorage';
-
-interface Subject {
-  id: number;
-  name: string;
-}
-
-interface Teacher {
-  id: number;
-  name: string;
-  subjects: number[];
-}
+import { Subject, Teacher, FixedClass } from '@/components/utils/types'; // Importa tipos
+import { getFixedClasses, saveFixedClasses } from '@/components/utils/db';
 
 interface TeacherManagerProps {
   teachers: Teacher[];
@@ -23,15 +14,6 @@ interface TeacherManagerProps {
 const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 const timeSlots = ['07:30 - 08:20', '08:20 - 09:10', '09:30 - 10:20', '10:20 - 11:10', '11:10 - 12:00'];
 const classes = ['Agropecuária', 'Informática', 'Administração', 'Zootecnia'];
-export interface FixedClass {
-  id: number;
-  date: string;
-  dayIndex: number;
-  timeIndex: number;
-  subjectId: number;
-  teacherId: number;
-  className: string;
-}
 
 export default function TeacherManager({
   teachers,
@@ -63,11 +45,14 @@ export default function TeacherManager({
     className: classes[0] || '',
   });
 
-  // Carregar aulas fixas
+  // Carregar aulas fixas do banco
   useEffect(() => {
-    setFixedClasses(getFixedClasses());
+    const loadFixedClasses = async () => {
+      const data = await getFixedClasses();
+      setFixedClasses(data);
+    };
+    loadFixedClasses();
   }, []);
-
 
   // Gerenciamento de Professores
   const handleSubmitTeacher = (e: React.FormEvent<HTMLFormElement>) => {
@@ -145,7 +130,7 @@ export default function TeacherManager({
     }));
   };
 
-  const handleFixedModalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFixedModalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const conflict = fixedClasses.find(
       (fc) =>
@@ -163,30 +148,30 @@ export default function TeacherManager({
 
     if (fixedModalMode === 'edit' && fixedClassForm.id) {
       updatedFixedClasses = fixedClasses.map((fc) =>
-        fc.id === fixedClassForm.id ? { ...fixedClassForm, id: fc.id } as FixedClass : fc
+        fc.id === fixedClassForm.id ? { ...fixedClassForm, id: fc.id, date: fc.date } : fc
       );
     } else {
       const newFixedClass: FixedClass = {
         id: Date.now(),
-        date: new Date().toISOString(),
         dayIndex: fixedClassForm.dayIndex,
         timeIndex: fixedClassForm.timeIndex,
         subjectId: fixedClassForm.subjectId,
         teacherId: fixedClassForm.teacherId,
         className: fixedClassForm.className,
+        date: ''
       };
       updatedFixedClasses = [...fixedClasses, newFixedClass];
     }
 
     setFixedClasses(updatedFixedClasses);
-    saveFixedClasses(updatedFixedClasses);
+    await saveFixedClasses(updatedFixedClasses);
     setIsFixedModalOpen(false);
   };
 
-  const handleDeleteFixedClass = (classId: number) => {
+  const handleDeleteFixedClass = async (classId: number) => {
     const updatedClasses = fixedClasses.filter((fc) => fc.id !== classId);
     setFixedClasses(updatedClasses);
-    saveFixedClasses(updatedClasses);
+    await saveFixedClasses(updatedClasses); 
   };
 
   return (
@@ -195,7 +180,6 @@ export default function TeacherManager({
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Gerenciar Professores</h2>
 
-        {/* Formulário para Criar Novo Professor */}
         <form onSubmit={handleSubmitTeacher} className="mb-6">
           <div className="mb-4">
             <input
@@ -223,9 +207,7 @@ export default function TeacherManager({
                     onChange={handleSubjectToggle}
                     className="mr-2"
                   />
-                  <label htmlFor={`new-subject-${subject.id}`}>
-                    {subject.name}
-                  </label>
+                  <label htmlFor={`new-subject-${subject.id}`}>{subject.name}</label>
                 </div>
               ))}
             </div>
@@ -239,7 +221,6 @@ export default function TeacherManager({
           </button>
         </form>
 
-        {/* Lista de Professores Cadastrados */}
         <div>
           <h3 className="font-medium text-gray-700 mb-2">Professores Cadastrados</h3>
           {teachers.length === 0 ? (
@@ -253,9 +234,7 @@ export default function TeacherManager({
                       onClick={() => toggleTeacherExpand(teacher.id)}
                       className="flex items-center text-left focus:outline-none"
                     >
-                      <span className="mr-2">
-                        {expandedTeacher === teacher.id ? '▼' : '►'}
-                      </span>
+                      <span className="mr-2">{expandedTeacher === teacher.id ? '▼' : '►'}</span>
                       <span className="teacher-name">{teacher.name}</span>
                     </button>
                     <button
@@ -296,7 +275,7 @@ export default function TeacherManager({
 
       {/* Gerenciador de Aulas Fixas */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Gerenciar Aulas Fixas</h2>
+        <h2 className="text-xl kritik-semibold mb-4">Gerenciar Aulas Fixas</h2>
         <div className="mb-2 text-gray-600 text-sm">
           Aulas fixas são aulas regulares que não podem ser trocadas ou excluídas na grade normal.
         </div>

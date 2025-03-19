@@ -3,43 +3,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import { getSubjects, getTeachers, saveSubjects, saveTeachers } from '@/components/utils/localStorage';
+import { getSubjects, getTeachers, saveSubjects, saveTeachers } from '@/components/utils/db';
 import TeacherManager from '@/components/TeacherManager';
-
-interface Subject {
-  id: number;
-  name: string;
-}
-
-interface Teacher {
-  id: number;
-  name: string;
-  subjects: number[];
-}
+import { Subject, Teacher } from '@/components/utils/types';
 
 export default function Manage() {
   const router = useRouter();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  
   const [newSubject, setNewSubject] = useState<string>('');
 
   useEffect(() => {
-    setSubjects(getSubjects());
-    setTeachers(getTeachers());
+    const loadData = async () => {
+      const dbSubjects = await getSubjects();
+      const dbTeachers = await getTeachers();
+      setSubjects(dbSubjects);
+      setTeachers(dbTeachers);
+    };
+    loadData();
   }, []);
 
-  const handleAddSubject = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddSubject = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newSubject.trim()) {
       const updatedSubjects = [...subjects, { id: Date.now(), name: newSubject.trim() }];
       setSubjects(updatedSubjects);
-      saveSubjects(updatedSubjects);
+      await saveSubjects(updatedSubjects);
       setNewSubject('');
     }
   };
 
-  const handleDeleteSubject = (subjectId: number) => {
+  const handleDeleteSubject = async (subjectId: number) => {
     const isUsedByTeacher = teachers.some(teacher => teacher.subjects.includes(subjectId));
     if (isUsedByTeacher) {
       alert('Essa matéria está atribuída a um ou mais professores e não pode ser excluída.');
@@ -47,27 +41,27 @@ export default function Manage() {
     }
     const updatedSubjects = subjects.filter(subject => subject.id !== subjectId);
     setSubjects(updatedSubjects);
-    saveSubjects(updatedSubjects);
+    await saveSubjects(updatedSubjects);
   };
 
-  const handleAddTeacher = (name: string, subjects: number[]) => {
+  const handleAddTeacher = async (name: string, subjects: number[]) => {
     const updatedTeachers = [...teachers, { id: Date.now(), name, subjects }];
     setTeachers(updatedTeachers);
-    saveTeachers(updatedTeachers);
+    await saveTeachers(updatedTeachers);
   };
 
-  const handleUpdateTeacherSubjects = (teacherId: number, newSubjects: number[]) => {
+  const handleUpdateTeacherSubjects = async (teacherId: number, newSubjects: number[]) => {
     const updatedTeachers = teachers.map(teacher =>
       teacher.id === teacherId ? { ...teacher, subjects: newSubjects } : teacher
     );
     setTeachers(updatedTeachers);
-    saveTeachers(updatedTeachers);
+    await saveTeachers(updatedTeachers);
   };
 
-  const handleDeleteTeacher = (teacherId: number) => {
+  const handleDeleteTeacher = async (teacherId: number) => {
     const updatedTeachers = teachers.filter(teacher => teacher.id !== teacherId);
     setTeachers(updatedTeachers);
-    saveTeachers(updatedTeachers);
+    await saveTeachers(updatedTeachers);
   };
 
   const handleBackClick = () => {
@@ -83,7 +77,6 @@ export default function Manage() {
       />
 
       <main className="container mx-auto py-6 px-4 text-black">
-        {/* Seção de Criar Matéria */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Criar Matéria</h2>
           <form onSubmit={handleAddSubject} className="mb-6">
@@ -123,7 +116,6 @@ export default function Manage() {
           )}
         </div>
 
-        {/* Componente TeacherManager - gerencia professores e aulas fixas */}
         <TeacherManager 
           teachers={teachers}
           subjects={subjects}

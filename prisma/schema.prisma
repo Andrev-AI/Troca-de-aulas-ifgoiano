@@ -1,24 +1,10 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-model Subject {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  teachers  Teacher[] // Relacionamento: uma matéria pode ter vários professores
-  classes   ClassData[] // Relacionamento: uma matéria pode estar em várias aulas
-}
-
-model Teacher {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  subjects  Subject[] // Relacionamento: um professor pode lecionar várias matérias
-  classes   ClassData[] // Relacionamento: um professor pode dar várias aulas
+datasource db {
+  provider = "sqlite" // Ou o banco de dados que você está usando (ex: postgresql, mysql)
+  url      = "file:./dev.db" // Substitua pela URL do seu banco de dados
 }
 
 model ClassData {
@@ -30,8 +16,6 @@ model ClassData {
   date       String
   isFixed    Boolean  @default(false)
   className  String
-  subject    Subject  @relation(fields: [subjectId], references: [id])
-  teacher    Teacher  @relation(fields: [teacherId], references: [id])
 }
 
 model FixedClass {
@@ -41,6 +25,15 @@ model FixedClass {
   subjectId  Int
   teacherId  Int
   className  String
-  subject    Subject  @relation(fields: [subjectId], references: [id])
-  teacher    Teacher  @relation(fields: [teacherId], references: [id])
+}
+
+model Subject {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
+model Teacher {
+  id       Int      @id @default(autoincrement())
+  name     String
+  subjects Subject[]
 }

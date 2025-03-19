@@ -1,32 +1,11 @@
 'use client';
-import { ClassData as LocalClassData } from '@/components/utils/localStorage';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import ScheduleTable from '@/components/ScheduleTable';
-import { getSchedule, getSubjects, getTeachers } from '@/components/utils/localStorage';
-
-interface Subject {
-  id: number;
-  name: string;
-}
-
-interface Teacher {
-  id: number;
-  name: string;
-  subjects: number[];
-}
-
-interface ClassData {
-  id: number;
-  dayIndex: number;
-  timeIndex: number;
-  subjectId: number;
-  teacherId: number;
-  date: string;
-  className: string;
-};
+import { getSchedule, getFixedClasses } from '@/components/utils/localStorage'; // Funções do banco para schedule
+import prisma from '../../lib/prisma'; // Cliente Prisma para subjects e teachers
+import { ClassData, Subject, Teacher } from '@/components/utils/types'; // Tipos atualizados
 
 export default function Home() {
   const router = useRouter();
@@ -35,18 +14,50 @@ export default function Home() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
 
   useEffect(() => {
-    const localSchedule = getSchedule();
-    const formattedSchedule: ClassData[] = localSchedule.map((item: LocalClassData) => ({
-      ...item,
-      className: item.className || '',
-    }));
+    const loadData = async () => {
+      // Carregar o schedule do banco
+      const dbSchedule = await getSchedule();
+      const fixedClasses = await getFixedClasses();
 
-    setSchedule(formattedSchedule);
+      // Combinar aulas regulares e fixas (ajustando o formato se necessário)
+      const formattedSchedule: ClassData[] = [
+        ...dbSchedule,
+        ...fixedClasses.map((fc) => ({
+          ...fc,
+          date: new Date().toISOString().split('T')[0], // Adiciona uma data padrão para fixas
+          isFixed: true,
+        })),
+      ].map((item) => ({
+        ...item,
+        className: item.className || '', // Garante que className esteja presente
+      }));
 
+      setSchedule(formattedSchedule);
 
+      // Carregar subjects e teachers diretamente do Prisma
+      const dbSubjects = await prisma.subject.findMany();
+      const dbTeachers = await prisma.teacher.findMany({
+        include: {
+          subjects: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
 
-    setSubjects(getSubjects());
-    setTeachers(getTeachers());
+      // Formatar os teachers para incluir os subjects como array de IDs
+      const formattedTeachers: Teacher[] = dbTeachers.map((teacher: { id: any; name: any; subjects: any[]; }) => ({
+        id: teacher.id,
+        name: teacher.name,
+        subjects: teacher.subjects.map((s) => s.id),
+      }));
+
+      setSubjects(dbSubjects);
+      setTeachers(formattedTeachers);
+    };
+
+    loadData();
   }, []);
 
   const currentWeek = new Date();
@@ -57,18 +68,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        title="Sistema de Troca de Aulas" 
-        onManageClick={handleManageClick}
-      />
+      <Header title="Sistema de Troca de Aulas" onManageClick={handleManageClick} />
 
       <main className="container mx-auto py-6 px-4">
-        <ScheduleTable 
+        <ScheduleTable
           schedule={schedule}
           setSchedule={setSchedule}
           subjects={subjects}
-          teachers={teachers} 
-          currentWeek={currentWeek}        />
+          teachers={teachers}
+          currentWeek={currentWeek}
+        />
       </main>
     </div>
   );
